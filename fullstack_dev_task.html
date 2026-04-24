@@ -1,0 +1,460 @@
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    font-family: var(--font-sans);
+  }
+  .page {
+    max-width: 680px;
+    padding: 2rem 0;
+  }
+  .header {
+    border-bottom: 0.5px solid var(--color-border-tertiary);
+    padding-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .badge {
+    display: inline-block;
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: var(--border-radius-md);
+    font-weight: 500;
+  }
+  .badge-amber {
+    background: #faeeda;
+    color: #633806;
+  }
+  .badge-blue {
+    background: #e6f1fb;
+    color: #0c447c;
+  }
+  .badge-red {
+    background: #fcebeb;
+    color: #791f1f;
+  }
+  .badge-teal {
+    background: #e1f5ee;
+    color: #085041;
+  }
+  .badge-purple {
+    background: #eeedfe;
+    color: #3c3489;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    margin: 0.5rem 0 0.25rem;
+  }
+  h2 {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    margin-bottom: 0.75rem;
+  }
+  h3 {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    margin-bottom: 0.4rem;
+  }
+  p {
+    font-size: 14px;
+    color: var(--color-text-secondary);
+    line-height: 1.7;
+  }
+  .meta {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 0.75rem;
+  }
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--color-text-secondary);
+  }
+  .section {
+    margin-bottom: 1.75rem;
+  }
+  .card {
+    background: var(--color-background-primary);
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-lg);
+    padding: 1rem 1.25rem;
+    margin-bottom: 0.75rem;
+  }
+  .card-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-body {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    line-height: 1.7;
+  }
+  ul {
+    padding-left: 1.2rem;
+  }
+  ul li {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    line-height: 1.8;
+  }
+  .rule-box {
+    background: #faeeda;
+    border-left: 3px solid #ef9f27;
+    border-radius: 0;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+  }
+  .rule-box p {
+    color: #633806;
+    font-size: 13px;
+  }
+  .timeline {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 0;
+  }
+  .tl-time {
+    font-size: 12px;
+    color: var(--color-text-tertiary);
+    padding: 0.5rem 1rem 0.5rem 0;
+    text-align: right;
+    border-right: 2px solid var(--color-border-tertiary);
+    line-height: 1.4;
+  }
+  .tl-content {
+    padding: 0.4rem 0 0.75rem 1rem;
+  }
+  .tl-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+  }
+  .tl-desc {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    margin-top: 2px;
+  }
+  .scoring {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .score-card {
+    background: var(--color-background-secondary);
+    border-radius: var(--border-radius-md);
+    padding: 0.75rem 1rem;
+  }
+  .score-num {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+  }
+  .score-label {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    margin-top: 2px;
+  }
+  .divider {
+    border: none;
+    border-top: 0.5px solid var(--color-border-tertiary);
+    margin: 1.5rem 0;
+  }
+  code {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    background: var(--color-background-secondary);
+    padding: 1px 5px;
+    border-radius: 4px;
+    color: var(--color-text-primary);
+  }
+  .print-btn {
+    display: inline-block;
+    font-size: 13px;
+    padding: 7px 16px;
+    border: 0.5px solid var(--color-border-secondary);
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    color: var(--color-text-secondary);
+    background: transparent;
+    margin-top: 0.5rem;
+  }
+  .print-btn:hover {
+    background: var(--color-background-secondary);
+  }
+</style>
+
+<div class="page">
+  <div class="header">
+    <div style="display: flex; gap: 8px; flex-wrap: wrap">
+      <span class="badge badge-amber">3-hour task</span>
+      <span class="badge badge-blue">Full stack</span>
+      <span class="badge badge-red">No AI tools</span>
+    </div>
+    <h1>Mini Task Manager — Technical Assessment</h1>
+    <p>
+      Build a small but production-quality full stack web application. We
+      evaluate your ability to architect, implement, and ship working software —
+      not just generate it.
+    </p>
+    <div class="meta">
+      <span class="meta-item">⏱ 3 hours</span>
+      <span class="meta-item">📦 Submit as a GitHub repo</span>
+      <span class="meta-item">🚫 No AI code generation</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>What you'll build</h2>
+    <p style="margin-bottom: 1rem">
+      A lightweight task manager with a REST API backend and a simple frontend.
+      The app should allow users to manage tasks with basic CRUD operations,
+      filtering, and real-time-like status updates.
+    </p>
+
+    <div class="card">
+      <div class="card-title">
+        <span class="badge badge-blue">Backend</span> REST API
+      </div>
+      <div class="card-body">
+        <ul>
+          <li>
+            Build a REST API with endpoints: <code>GET /tasks</code>,
+            <code>POST /tasks</code>, <code>PATCH /tasks/:id</code>,
+            <code>DELETE /tasks/:id</code>
+          </li>
+          <li>
+            Each task has: <code>id</code>, <code>title</code>,
+            <code>description</code>, <code>status</code> (todo / in-progress /
+            done), <code>priority</code> (low / medium / high),
+            <code>createdAt</code>
+          </li>
+          <li>
+            Support query param filtering:
+            <code>GET /tasks?status=todo&priority=high</code>
+          </li>
+          <li>
+            Validate inputs and return proper HTTP status codes with error
+            messages
+          </li>
+          <li>
+            Persist data in any database (SQLite is fine) — no in-memory only
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span class="badge badge-teal">Frontend</span> UI
+      </div>
+      <div class="card-body">
+        <ul>
+          <li>
+            Display all tasks in a list; show title, priority badge, and status
+          </li>
+          <li>Filter tasks by status and/or priority without a page reload</li>
+          <li>Form to create a new task with client-side validation</li>
+          <li>
+            Inline status update (e.g. dropdown or button) that calls the API
+            and reflects immediately
+          </li>
+          <li>Delete a task with a confirmation prompt</li>
+          <li>Basic responsive layout (must work on mobile width)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span class="badge badge-purple">Bonus</span> Optional extras (only if
+        time allows)
+      </div>
+      <div class="card-body">
+        <ul>
+          <li>Drag-and-drop to reorder tasks within a status column</li>
+          <li>
+            Simple auth — a hardcoded API key passed in a request header,
+            validated on every route
+          </li>
+          <li>Unit test for at least one API endpoint</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <div class="section">
+    <h2>Tech stack</h2>
+    <p style="margin-bottom: 1rem">
+      You may use any of the following. Pick what you know best — the task is
+      the same regardless.
+    </p>
+    <div class="card">
+      <div class="card-body">
+        <ul>
+          <li>
+            <strong style="font-weight: 500; color: var(--color-text-primary)"
+              >Backend:</strong
+            >
+            Node.js (Express / Fastify / Hono), Python (FastAPI / Flask), or Go
+          </li>
+          <li>
+            <strong style="font-weight: 500; color: var(--color-text-primary)"
+              >Frontend:</strong
+            >
+            React, Vue, Svelte, or plain HTML/JS — your choice
+          </li>
+          <li>
+            <strong style="font-weight: 500; color: var(--color-text-primary)"
+              >Database:</strong
+            >
+            SQLite, PostgreSQL, or MongoDB
+          </li>
+          <li>
+            <strong style="font-weight: 500; color: var(--color-text-primary)"
+              >Styling:</strong
+            >
+            Any CSS framework or vanilla CSS
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <div class="section">
+    <h2>Suggested timeline</h2>
+    <div class="timeline">
+      <div class="tl-time">0 – 20 min</div>
+      <div class="tl-content">
+        <div class="tl-title">Setup & planning</div>
+        <div class="tl-desc">
+          Scaffold project, set up DB schema, plan your routes and component
+          structure
+        </div>
+      </div>
+      <div class="tl-time">20 – 90 min</div>
+      <div class="tl-content">
+        <div class="tl-title">Backend</div>
+        <div class="tl-desc">
+          Implement all CRUD routes, validation, filtering, and DB integration
+        </div>
+      </div>
+      <div class="tl-time">90 – 150 min</div>
+      <div class="tl-content">
+        <div class="tl-title">Frontend</div>
+        <div class="tl-desc">
+          Build the task list, filters, create form, inline updates, and delete
+        </div>
+      </div>
+      <div class="tl-time">150 – 170 min</div>
+      <div class="tl-content">
+        <div class="tl-title">Polish & test</div>
+        <div class="tl-desc">
+          Manual testing, fix edge cases, check mobile layout
+        </div>
+      </div>
+      <div class="tl-time">170 – 180 min</div>
+      <div class="tl-content">
+        <div class="tl-title">README & submit</div>
+        <div class="tl-desc">Write setup instructions and push to GitHub</div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <div class="section">
+    <h2>Rules</h2>
+    <div class="rule-box">
+      <p>
+        🚫 Do not use AI code generation tools (ChatGPT, Copilot, Cursor,
+        Claude, etc.) to write or complete code. We will ask you to explain
+        every part of your submission live.
+      </p>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <ul>
+          <li>
+            You may use official documentation, MDN, Stack Overflow, and package
+            READMEs
+          </li>
+          <li>Do not copy-paste entire solutions from tutorials or GitHub</li>
+          <li>
+            Your code must run locally with a single command after
+            <code>npm install</code> / <code>pip install</code>
+          </li>
+          <li>
+            Include a <code>README.md</code> with setup steps and any
+            assumptions you made
+          </li>
+          <li>Keep commits small and meaningful — we look at git history</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <div class="section">
+    <h2>How we score</h2>
+    <div class="scoring">
+      <div class="score-card">
+        <div class="score-num">35 pts</div>
+        <div class="score-label">
+          API correctness — routes work, validation, status codes
+        </div>
+      </div>
+      <div class="score-card">
+        <div class="score-num">25 pts</div>
+        <div class="score-label">
+          Frontend functionality — all features work end-to-end
+        </div>
+      </div>
+      <div class="score-card">
+        <div class="score-num">20 pts</div>
+        <div class="score-label">
+          Code quality — readable, organized, no obvious bad practices
+        </div>
+      </div>
+      <div class="score-card">
+        <div class="score-num">10 pts</div>
+        <div class="score-label">README and setup clarity</div>
+      </div>
+      <div class="score-card">
+        <div class="score-num">10 pts</div>
+        <div class="score-label">
+          Bonus features (auth, test, drag-and-drop)
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <div class="section">
+    <h2>Submission</h2>
+    <p>
+      Push your code to a public GitHub repository and share the link before the
+      deadline. Ensure the repo includes your README and a short note explaining
+      any trade-offs or things you would improve with more time.
+    </p>
+  </div>
+</div>
