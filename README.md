@@ -44,8 +44,10 @@ On Windows, set variables in the shell or use a small wrapper; on macOS/Linux, t
 ## Tests
 
 ```bash
-npm run test -w server
+npm test
 ```
+
+(Runs `npm run test` in the `server` workspace.)
 
 ## Environment variables (summary)
 
