@@ -5,6 +5,7 @@ export type Task = {
   status: "todo" | "in-progress" | "done"
   priority: "low" | "medium" | "high"
   createdAt: string
+  sortOrder: number
 }
 
 export type TaskRow = {
@@ -14,6 +15,7 @@ export type TaskRow = {
   status: string
   priority: string
   created_at: string
+  sort_order: number
 }
 
 export function rowToTask(r: TaskRow): Task {
@@ -24,5 +26,6 @@ export function rowToTask(r: TaskRow): Task {
     status: r.status as Task["status"],
     priority: r.priority as Task["priority"],
     createdAt: r.created_at,
+    sortOrder: r.sort_order,
   }
 }

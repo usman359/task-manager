@@ -29,6 +29,16 @@ export const patchTaskBodySchema = z
   .strict()
   .refine((d) => Object.keys(d).length > 0, { message: "At least one field is required" })
 
+/** Reorder tasks within one status column (`sort_order` 0 = top). */
+export const reorderBodySchema = z
+  .object({
+    status: taskStatusSchema,
+    orderedIds: z.array(z.string().min(1)),
+  })
+  .strict()
+  .refine((d) => d.orderedIds.length > 0, { message: "orderedIds must not be empty" })
+
 export type GetTasksQuery = z.infer<typeof getTasksQuerySchema>
 export type CreateTaskBody = z.infer<typeof createTaskBodySchema>
 export type PatchTaskBody = z.infer<typeof patchTaskBodySchema>
+export type ReorderBody = z.infer<typeof reorderBodySchema>

@@ -26,7 +26,7 @@ export default defineConfig([
     },
   },
   {
-    files: ['src/App.tsx'],
+    files: ['src/tasks/use-tasks-page.ts'],
     rules: {
       'react-hooks/set-state-in-effect': 'off',
     },

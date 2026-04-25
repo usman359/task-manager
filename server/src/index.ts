@@ -2,7 +2,7 @@ import { createApp } from "./app.js"
 import { getDb } from "./db.js"
 
 const app = createApp()
-const port = Number(process.env.PORT) || 3001
+const port = Number(process.env.PORT) || 3002
 
 getDb()
 

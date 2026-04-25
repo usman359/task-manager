@@ -2,16 +2,14 @@ import type { Task, TaskPriority, TaskStatus } from "@/types"
 
 const base = import.meta.env.VITE_API_BASE ?? ""
 
-function getHeaders(): HeadersInit {
-  const h: Record<string, string> = {
-    "Content-Type": "application/json",
-  }
-  const key = import.meta.env.VITE_API_KEY
-  if (key) h["X-API-Key"] = key
+function getHeaders(isJson: boolean): HeadersInit {
+  const h: Record<string, string> = {}
+  if (isJson) h["Content-Type"] = "application/json"
+  const k = import.meta.env.VITE_API_KEY
+  if (k) h["X-API-Key"] = k
   return h
 }
 
-/** Thrown on non-2xx/3xx; includes HTTP status and optional response body. */
 export class ApiError extends Error {
   readonly status: number
   readonly body: unknown
@@ -24,51 +22,24 @@ export class ApiError extends Error {
   }
 }
 
-function firstZodFlattenMessage(details: unknown): string | null {
-  if (!details || typeof details !== "object") return null
-  const d = details as { fieldErrors?: Record<string, string[] | undefined>; formErrors?: string[] }
-  if (d.fieldErrors && typeof d.fieldErrors === "object") {
-    for (const msgs of Object.values(d.fieldErrors)) {
-      if (Array.isArray(msgs) && msgs[0]) return msgs[0]
-    }
+function errorMessage(res: Response, body: unknown): string {
+  if (res.status === 401) {
+    return "Unauthorized — set VITE_API_KEY in client env to match server API_KEY"
   }
-  if (Array.isArray(d.formErrors) && d.formErrors[0]) return d.formErrors[0]
-  return null
-}
-
-/**
- * Build a user-facing string from the API JSON and status line.
- * Backend sends `{ error, details? }` on 400; `{ error }` on 401/404.
- */
-export function parseErrorResponse(res: Response, body: unknown): string {
-  const st = res.status
   if (body && typeof body === "object") {
-    const o = body as { error?: unknown; message?: unknown; details?: unknown }
-    if (typeof o.error === "string") {
-      const fromZod = o.details ? firstZodFlattenMessage(o.details) : null
-      if (fromZod) {
-        return `${o.error} — ${fromZod}`
-      }
-      return o.error
-    }
-    if (typeof o.message === "string") {
-      return o.message
-    }
+    const o = body as { error?: unknown; message?: unknown }
+    if (typeof o.error === "string") return o.error
+    if (typeof o.message === "string") return o.message
   }
-  if (st === 401) {
-    return "Unauthorized (check X-API-Key / VITE_API_KEY if the server requires an API key)"
-  }
-  if (st === 403) return "Forbidden"
-  if (st === 404) return "Not found"
-  if (st === 400) return "Bad request — check your input"
-  if (st === 422) return "Validation failed on the server"
-  if (st >= 500) return "Server error — try again later"
-  return `Request failed (HTTP ${st})`
+  if (res.status === 404) return "Not found"
+  if (res.status === 400) return "Invalid request"
+  if (res.status >= 500) return "Server error"
+  return `Request failed (HTTP ${res.status})`
 }
 
-function throwOnNotOk(res: Response, data: unknown): void {
+function throwOnBad(res: Response, data: unknown): void {
   if (res.ok) return
-  throw new ApiError(parseErrorResponse(res, data), res.status, data)
+  throw new ApiError(errorMessage(res, data), res.status, data)
 }
 
 export type ListFilters = { status?: TaskStatus; priority?: TaskPriority }
@@ -77,11 +48,11 @@ export async function fetchTasks(filters: ListFilters = {}): Promise<Task[]> {
   const q = new URLSearchParams()
   if (filters.status) q.set("status", filters.status)
   if (filters.priority) q.set("priority", filters.priority)
-  const qstr = q.toString()
-  const url = qstr ? `${base}/tasks?${qstr}` : `${base}/tasks`
-  const res = await fetch(url, { headers: getHeaders() })
+  const qs = q.toString()
+  const url = qs ? `${base}/tasks?${qs}` : `${base}/tasks`
+  const res = await fetch(url, { headers: getHeaders(false) })
   const data = (await res.json().catch(() => ({}))) as unknown
-  throwOnNotOk(res, data)
+  throwOnBad(res, data)
   return data as Task[]
 }
 
@@ -93,11 +64,11 @@ export async function createTask(body: {
 }): Promise<Task> {
   const res = await fetch(`${base}/tasks`, {
     method: "POST",
-    headers: getHeaders(),
+    headers: getHeaders(true),
     body: JSON.stringify(body),
   })
   const data = (await res.json().catch(() => ({}))) as unknown
-  throwOnNotOk(res, data)
+  throwOnBad(res, data)
   return data as Task
 }
 
@@ -107,20 +78,35 @@ export async function patchTask(
 ): Promise<Task> {
   const res = await fetch(`${base}/tasks/${id}`, {
     method: "PATCH",
-    headers: getHeaders(),
+    headers: getHeaders(true),
     body: JSON.stringify(patch),
   })
   const data = (await res.json().catch(() => ({}))) as unknown
-  throwOnNotOk(res, data)
+  throwOnBad(res, data)
   return data as Task
 }
 
 export async function deleteTask(id: string): Promise<void> {
   const res = await fetch(`${base}/tasks/${id}`, {
     method: "DELETE",
-    headers: getHeaders(),
+    headers: getHeaders(false),
   })
   if (res.status === 204) return
   const data = (await res.json().catch(() => ({}))) as unknown
-  throwOnNotOk(res, data)
+  throwOnBad(res, data)
+}
+
+/** Persist order after drag within one status (bonus). */
+export async function reorderTasksInStatus(body: {
+  status: TaskStatus
+  orderedIds: string[]
+}): Promise<void> {
+  const res = await fetch(`${base}/tasks/reorder`, {
+    method: "PATCH",
+    headers: getHeaders(true),
+    body: JSON.stringify(body),
+  })
+  if (res.status === 204) return
+  const data = (await res.json().catch(() => ({}))) as unknown
+  throwOnBad(res, data)
 }

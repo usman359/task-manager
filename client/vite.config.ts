@@ -17,7 +17,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/tasks': {
-        target: 'http://localhost:3001',
+        target: 'http://localhost:3002',
         changeOrigin: true,
       },
     },

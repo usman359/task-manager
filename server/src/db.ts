@@ -17,6 +17,13 @@ function getDbPath(): string {
   return path.join(__dirname, "..", "data", "tasks.db")
 }
 
+function migrateSortOrder(db: Database) {
+  const rows = db.prepare("PRAGMA table_info(tasks)").all() as { name: string }[]
+  if (!rows.some((c) => c.name === "sort_order")) {
+    db.exec("ALTER TABLE tasks ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0")
+  }
+}
+
 function openDb(): Database {
   const dbPath = getDbPath()
   if (dbPath !== ":memory:") {
@@ -36,6 +43,7 @@ function openDb(): Database {
       created_at TEXT NOT NULL
     );
   `)
+  migrateSortOrder(db)
   return db
 }
 

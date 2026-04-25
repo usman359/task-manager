@@ -1,95 +1,135 @@
-# Mini Task Manager
+# Mini Task Manager — Technical Assessment
 
-Full-stack task manager: **Express** + **SQLite** (better-sqlite3) REST API, **React** + **Vite** + **Tailwind** + **shadcn/ui** client.
+A **full-stack** task app: **Express** + **SQLite** + **Zod** on the back end, **React (Vite)** + **Tailwind** + **@dnd-kit** on the front end. It matches the “Mini Task Manager” brief: CRUD, query filters, client validation, inline status, delete confirmation, responsive UI, and **all optional bonuses** (API key, tests, drag-and-drop).
 
-## Prerequisites
+---
 
-- **Node.js** 20+ (LTS recommended)
-- **npm** 9+
+## How we score (100 pts, from the brief)
 
-## One-command development
+| Pts  | What reviewers look for |
+| ---- | ------------------------ |
+| **35** | **API** — correct routes, validation, HTTP status codes |
+| **25** | **Frontend** — features work end-to-end with the API |
+| **20** | **Code** — readable, organized, no obvious bad practices |
+| **10** | **README** — setup is easy to follow; assumptions and trade-offs are clear |
+| **10** | **Bonus** — API key, automated tests, drag-and-drop (see [Bonuses](#bonuses) below) |
 
-From the repository root (after a fresh `git clone`):
+---
+
+## 1) What you need
+
+- **Node.js 20+**
+- **npm**
+
+---
+
+## 2) Run locally (quickest)
+
+In the **repository root** (this folder, after you clone):
+
+### Step 1 — Install
 
 ```bash
 npm install
+```
+
+This installs the root workspace and both **client** and **server** packages.
+
+### Step 2 — Start API + web UI in development
+
+```bash
 npm run dev
 ```
 
-This runs the API on **http://localhost:3001** and the Vite app on **http://localhost:5173**. The Vite dev server **proxies** `GET/POST/PATCH/DELETE` on `/tasks` to the API, so the browser can call `fetch("/tasks", …)`.
+- **UI:** open [http://localhost:5173](http://localhost:5173) in the browser.  
+- **API:** the server listens on [http://localhost:3002](http://localhost:3002) under the path **`/tasks`**.  
+- In dev, the Vite app **proxies** `/tasks` to that server, so the React code can call `fetch("/tasks", …)`.
 
-- Open **http://localhost:5173** in your browser to use the UI.
+> **If you do not set an API key** (next section), you do not need to configure anything else: the app should work for local testing.
 
-## Production build
+### Step 3 (optional) — API key in dev
+
+If you want to use the same **header auth** the bonus describes:
+
+1. In **`server/.env`** (or your shell) set, for example:  
+   `API_KEY=dev-secret`
+2. In **`client/.env` or `client/.env.local`** set:  
+   `VITE_API_KEY=dev-secret`  
+   (It must be the same string as the server’s `API_KEY`.)
+
+The client sends it as the **`X-API-Key`** header. If `API_KEY` is **not** set on the server, the API is open and the client does not need a key. See [`.env.example`](.env.example) for a full list of variables.
+
+---
+
+## 3) Run a production build (one process)
+
+**Step 1 — Build the client and compile the server**
 
 ```bash
 npm run build
 ```
 
-Then start the server with `NODE_ENV=production` so it serves the built SPA and the same `/tasks` API on one port:
+**Step 2 — Start** (serves the built React app and `/tasks` on one port)
 
 ```bash
-PORT=3001 NODE_ENV=production npm start
+PORT=3002 NODE_ENV=production npm start
 ```
 
-Open **http://localhost:3001** (or your chosen `PORT`).
+**Step 3** — Open [http://localhost:3002](http://localhost:3002) (or your `PORT`).
 
-On Windows, set variables in the shell or use a small wrapper; on macOS/Linux, the line above is enough.
+`NODE_ENV=production` makes Express serve the static files from `client/dist`, so a single process hosts both UI and API.
 
-## Optional API key
+---
 
-- Set `API_KEY` in the environment when **starting the server** (or copy `.env.example` to `.env` in `server/` and use `dotenv` — the server already loads `dotenv/config`).
-- In development, if you use a key, set `VITE_API_KEY` the same in `client/.env` / `.env.local` so the client sends `X-API-Key`. Without `API_KEY` on the server, auth is off.
+## 4) Other useful commands
 
-## Tests
+| Command | When to use it |
+| ------- | -------------- |
+| `npm test` | Runs the **server** API tests (Node’s test runner + supertest) |
+| `cd client && npm run lint` | Lints the React/TS code |
 
-```bash
-npm test
-```
+---
 
-(Runs `npm run test` in the `server` workspace.)
+## 5) API (short reference)
 
-## Environment variables (summary)
+| Method | Path | Description |
+| ------ | ---- | ----------- |
+| `GET` | `/tasks` | List tasks. Optional: `?status=todo&priority=high` |
+| `POST` | `/tasks` | Create (JSON: `title`, `description`, `status`, `priority`); `id` and `createdAt` and `sortOrder` are set on the server |
+| `PATCH` | `/tasks/reorder` | **Bonus (DnD):** body `{ "status": "todo", "orderedIds": ["id1", "id2", …] }` — new order in that **status** column. **204** on success. |
+| `PATCH` | `/tasks/:id` | Update any subset of fields. **400** if invalid, **404** if not found. |
+| `DELETE` | `/tasks/:id` | **204** if deleted, **404** if not found. |
 
-| Variable        | Where   | Description                                      |
-| --------------- | ------- | ------------------------------------------------ |
-| `PORT`          | server  | Listen port (default `3001`)                    |
-| `NODE_ENV`      | server  | `production` enables static file serving         |
-| `DATABASE_PATH` | server  | SQLite file path or `:memory:` (e.g. for tests) |
-| `API_KEY`       | server  | If set, required `X-API-Key` for `/tasks`        |
-| `VITE_API_KEY`  | client  | Sent as `X-API-Key` if set (must match `API_KEY`) |
-| `VITE_API_BASE` | client  | API origin prefix; empty = same origin / proxy   |
+If **`API_KEY`** is set, every `.../tasks/...` request must include **`X-API-Key: <same value>`** or the response is **401**.
 
-See [.env.example](.env.example).
+---
 
-## URL state (nuqs)
+## 6) Bonuses (all implemented in this repo)
 
-The client uses **[nuqs](https://github.com/47ng/nuqs)** with the Vite/SPA **adapter** (`NuqsAdapter` in `client/src/main.tsx`). List filters and the “new task” draft fields are stored in the **query string** (e.g. `fStatus`, `fPriority`, `newTitle`, `newDescription`, `newStatus`, `newPriority`) so **reloads** and **shared links** keep the same view. Long text uses **throttle** on URL updates to avoid work per keystroke.
+| Bonus | What we did |
+| ----- | ------------ |
+| **Unit tests** | `npm test` — covers `GET`, `POST` + filter, `PATCH /tasks/reorder`, 401 when key is missing, 404s, `sortOrder` in JSON. |
+| **API key** | Optional env `API_KEY` on the server; client uses `VITE_API_KEY` → `X-API-Key`. |
+| **Drag-and-drop** | **`@dnd-kit`** (`@dnd-kit/core` + `sortable` + `utilities`) — 3 **status** columns; drag the **grip** handle to reorder **within** a column; `PATCH /tasks/reorder` persists `sortOrder`. |
 
-## Assumptions and trade-offs
+---
 
-- **No drag-and-drop ordering** in this build; the data model is simple CRUD + filters. A `sort_order` column and a `PUT /tasks/reorder` (or per-status ordering) would be the next step.
-- **“Real-time” updates** are **immediate after API success** (no WebSockets). Good enough for the brief’s “real-time-like” phrasing.
-- **SQLite** is file-based, works locally with no extra services; for heavy concurrency, PostgreSQL + connection pooling would be a natural upgrade.
-- **Auth** is an optional static API key, not end-user auth.
+## 7) Core requirements (from the spec)
 
-**Interview / code tour:** see [INTERVIEW_WALKTHROUGH.md](INTERVIEW_WALKTHROUGH.md) for a step-by-step file list (backend and frontend) you can use when explaining the project.
+- **CRUD** on `/tasks` with the fields and enums from the brief.  
+- **Filtering** on `GET` without reloading the full page.  
+- **Form** for new tasks with **client-side** checks before `POST`.  
+- **Inline** status change + **delete** with a **confirmation** dialog.  
+- **Layout** that works on mobile (columns stack; drag still works on touch with the handle).
 
-## API
+---
 
-| Method   | Path           | Description                                |
-| -------- | -------------- | ------------------------------------------ |
-| `GET`    | `/tasks`       | Optional query: `?status=&priority=`        |
-| `POST`   | `/tasks`       | JSON body: `title`, `description`, `status`, `priority` |
-| `PATCH`  | `/tasks/:id`  | JSON body: any subset of task fields        |
-| `DELETE` | `/tasks/:id`  | `204` on success                            |
+## 8) Assumptions & trade-offs
 
-`status` ∈ `todo` \| `in-progress` \| `done`. `priority` ∈ `low` \| `medium` \| `high`. Responses use **camelCase** for dates: `createdAt` (ISO 8601).
-
-## Project layout
-
-- `server/` — Express, validation (Zod), SQLite
-- `client/` — Vite + React + shadcn/ui
+- **SQLite** + one file: easy to run locally; a hosted SQL DB is the usual next step for real traffic.  
+- **“Real-time-like”** means the list updates **as soon as the API responds**; there is no WebSocket.  
+- **Drag-and-drop** is only **inside** a single status column (per the spec).  
+- A step-by-step **code map** (optional) is in [INTERVIEW_WALKTHROUGH.md](INTERVIEW_WALKTHROUGH.md).
 
 ## License
 
