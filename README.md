@@ -62,12 +62,18 @@ npm test
 
 See [.env.example](.env.example).
 
+## URL state (nuqs)
+
+The client uses **[nuqs](https://github.com/47ng/nuqs)** with the Vite/SPA **adapter** (`NuqsAdapter` in `client/src/main.tsx`). List filters and the “new task” draft fields are stored in the **query string** (e.g. `fStatus`, `fPriority`, `newTitle`, `newDescription`, `newStatus`, `newPriority`) so **reloads** and **shared links** keep the same view. Long text uses **throttle** on URL updates to avoid work per keystroke.
+
 ## Assumptions and trade-offs
 
 - **No drag-and-drop ordering** in this build; the data model is simple CRUD + filters. A `sort_order` column and a `PUT /tasks/reorder` (or per-status ordering) would be the next step.
 - **“Real-time” updates** are **immediate after API success** (no WebSockets). Good enough for the brief’s “real-time-like” phrasing.
 - **SQLite** is file-based, works locally with no extra services; for heavy concurrency, PostgreSQL + connection pooling would be a natural upgrade.
 - **Auth** is an optional static API key, not end-user auth.
+
+**Interview / code tour:** see [INTERVIEW_WALKTHROUGH.md](INTERVIEW_WALKTHROUGH.md) for a step-by-step file list (backend and frontend) you can use when explaining the project.
 
 ## API
 

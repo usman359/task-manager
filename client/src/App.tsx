@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react"
+import { useQueryStates } from "nuqs"
 import { z } from "zod"
-import { createTask, deleteTask, fetchTasks, patchTask, type ListFilters } from "@/lib/api"
+import { ApiError, createTask, deleteTask, fetchTasks, patchTask, type ListFilters } from "@/lib/api"
+import { taskListUrlParsers } from "@/lib/task-url-state"
 import { formatCreatedAt, priorityVariant, statusBadgeVariant, statusLabel } from "@/lib/task-presentation"
 import type { Task, TaskPriority, TaskStatus } from "@/types"
 import { Badge } from "@/components/ui/badge"
@@ -58,15 +60,16 @@ export default function App() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-
-  const [statusFilter, setStatusFilter] = useState<FilterValueStatus>("all")
-  const [priorityFilter, setPriorityFilter] = useState<FilterValuePriority>("all")
-
-  const [title, setTitle] = useState("")
-  const [description, setDescription] = useState("")
-  const [newStatus, setNewStatus] = useState<TaskStatus>("todo")
-  const [newPriority, setNewPriority] = useState<TaskPriority>("medium")
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
+
+  const [q, setQuery] = useQueryStates(taskListUrlParsers, { history: "push" })
+
+  const statusFilter: FilterValueStatus = q.fStatus
+  const priorityFilter: FilterValuePriority = q.fPriority
+  const title = q.newTitle
+  const description = q.newDescription
+  const newStatus: TaskStatus = q.newStatus
+  const newPriority: TaskPriority = q.newPriority
 
   const [pending, setPending] = useState<string | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
@@ -80,7 +83,11 @@ export default function App() {
       const list = await fetchTasks(toListFilters(statusFilter, priorityFilter))
       setTasks(list)
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load tasks")
+      if (e instanceof ApiError) {
+        setError(e.message)
+      } else {
+        setError(e instanceof Error ? e.message : "Failed to load tasks")
+      }
     } finally {
       setLoading(false)
     }
@@ -113,14 +120,20 @@ export default function App() {
     setError(null)
     void createTask(parsed.data)
       .then(() => {
-        setTitle("")
-        setDescription("")
-        setNewStatus("todo")
-        setNewPriority("medium")
+        void setQuery({
+          newTitle: "",
+          newDescription: "",
+          newStatus: "todo",
+          newPriority: "medium",
+        })
         return load()
       })
       .catch((err: unknown) => {
-        setError(err instanceof Error ? err.message : "Create failed")
+        if (err instanceof ApiError) {
+          setError(err.message)
+        } else {
+          setError(err instanceof Error ? err.message : "Create failed")
+        }
       })
       .finally(() => {
         setCreateBusy(false)
@@ -137,7 +150,11 @@ export default function App() {
         setTasks((prev) => prev.map((t) => (t.id === task.id ? updated : t)))
       })
       .catch((err: unknown) => {
-        setError(err instanceof Error ? err.message : "Update failed")
+        if (err instanceof ApiError) {
+          setError(err.message)
+        } else {
+          setError(err instanceof Error ? err.message : "Update failed")
+        }
       })
       .finally(() => {
         setPending(null)
@@ -154,7 +171,11 @@ export default function App() {
         setTasks((prev) => prev.filter((t) => t.id !== toDelete.id))
       })
       .catch((err: unknown) => {
-        setError(err instanceof Error ? err.message : "Delete failed")
+        if (err instanceof ApiError) {
+          setError(err.message)
+        } else {
+          setError(err instanceof Error ? err.message : "Delete failed")
+        }
       })
       .finally(() => {
         setDeleting(null)
@@ -167,7 +188,10 @@ export default function App() {
         <header className="space-y-1">
           <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Task manager</h1>
           <p className="text-sm text-muted-foreground">
-            Create, filter, and update tasks. Changes sync to the server without a full page reload.
+            Create, filter, and update tasks. Changes sync to the server without a full page reload. List filters
+            and the new-task draft (title, description, status, priority) are kept in the URL (
+            <code className="text-xs">nuqs</code>
+            ) so a refresh or shared link preserves your view.
           </p>
         </header>
 
@@ -184,7 +208,7 @@ export default function App() {
                   id="title"
                   name="title"
                   value={title}
-                  onChange={(e) => setTitle(e.target.value)}
+                  onChange={(e) => void setQuery({ newTitle: e.target.value })}
                   autoComplete="off"
                   aria-invalid={formErrors.title ? "true" : "false"}
                 />
@@ -200,7 +224,7 @@ export default function App() {
                   id="description"
                   name="description"
                   value={description}
-                  onChange={(e) => setDescription(e.target.value)}
+                  onChange={(e) => void setQuery({ newDescription: e.target.value })}
                   rows={3}
                 />
                 {formErrors.description ? (
@@ -218,7 +242,7 @@ export default function App() {
                     value={newStatus}
                     onValueChange={(v) => {
                       const p = z.union([z.literal("todo"), z.literal("in-progress"), z.literal("done")]).safeParse(v)
-                      if (p.success) setNewStatus(p.data)
+                      if (p.success) void setQuery({ newStatus: p.data })
                     }}
                   >
                     <SelectTrigger className="w-full" id="new-status" aria-labelledby="new-status-label">
@@ -239,7 +263,7 @@ export default function App() {
                     value={newPriority}
                     onValueChange={(v) => {
                       const p = z.union([z.literal("low"), z.literal("medium"), z.literal("high")]).safeParse(v)
-                      if (p.success) setNewPriority(p.data)
+                      if (p.success) void setQuery({ newPriority: p.data })
                     }}
                   >
                     <SelectTrigger className="w-full" id="new-priority" aria-labelledby="new-priority-label">
@@ -275,7 +299,7 @@ export default function App() {
                   const p = z
                     .union([z.literal("all"), z.literal("todo"), z.literal("in-progress"), z.literal("done")])
                     .safeParse(v)
-                  if (p.success) setStatusFilter(p.data)
+                  if (p.success) void setQuery({ fStatus: p.data })
                 }}
               >
                 <SelectTrigger
@@ -303,7 +327,7 @@ export default function App() {
                   const p = z
                     .union([z.literal("all"), z.literal("low"), z.literal("medium"), z.literal("high")])
                     .safeParse(v)
-                  if (p.success) setPriorityFilter(p.data)
+                  if (p.success) void setQuery({ fPriority: p.data })
                 }}
               >
                 <SelectTrigger
