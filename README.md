@@ -4,18 +4,6 @@ A **full-stack** task app: **Express** + **SQLite** + **Zod** on the back end, *
 
 ---
 
-## How we score (100 pts, from the brief)
-
-| Pts  | What reviewers look for |
-| ---- | ------------------------ |
-| **35** | **API** — correct routes, validation, HTTP status codes |
-| **25** | **Frontend** — features work end-to-end with the API |
-| **20** | **Code** — readable, organized, no obvious bad practices |
-| **10** | **README** — setup is easy to follow; assumptions and trade-offs are clear |
-| **10** | **Bonus** — API key, automated tests, drag-and-drop (see [Bonuses](#bonuses) below) |
-
----
-
 ## 1) What you need
 
 - **Node.js 20+**
@@ -41,8 +29,8 @@ This installs the root workspace and both **client** and **server** packages.
 npm run dev
 ```
 
-- **UI:** open [http://localhost:5173](http://localhost:5173) in the browser.  
-- **API:** the server listens on [http://localhost:3002](http://localhost:3002) under the path **`/tasks`**.  
+- **UI:** open [http://localhost:5173](http://localhost:5173) in the browser.
+- **API:** the server listens on [http://localhost:3002](http://localhost:3002) under the path **`/tasks`**.
 - In dev, the Vite app **proxies** `/tasks` to that server, so the React code can call `fetch("/tasks", …)`.
 
 > **If you do not set an API key** (next section), you do not need to configure anything else: the app should work for local testing.
@@ -83,22 +71,22 @@ PORT=3002 NODE_ENV=production npm start
 
 ## 4) Other useful commands
 
-| Command | When to use it |
-| ------- | -------------- |
-| `npm test` | Runs the **server** API tests (Node’s test runner + supertest) |
-| `cd client && npm run lint` | Lints the React/TS code |
+| Command                     | When to use it                                                 |
+| --------------------------- | -------------------------------------------------------------- |
+| `npm test`                  | Runs the **server** API tests (Node’s test runner + supertest) |
+| `cd client && npm run lint` | Lints the React/TS code                                        |
 
 ---
 
 ## 5) API (short reference)
 
-| Method | Path | Description |
-| ------ | ---- | ----------- |
-| `GET` | `/tasks` | List tasks. Optional: `?status=todo&priority=high` |
-| `POST` | `/tasks` | Create (JSON: `title`, `description`, `status`, `priority`); `id` and `createdAt` and `sortOrder` are set on the server |
-| `PATCH` | `/tasks/reorder` | **Bonus (DnD):** body `{ "status": "todo", "orderedIds": ["id1", "id2", …] }` — new order in that **status** column. **204** on success. |
-| `PATCH` | `/tasks/:id` | Update any subset of fields. **400** if invalid, **404** if not found. |
-| `DELETE` | `/tasks/:id` | **204** if deleted, **404** if not found. |
+| Method   | Path             | Description                                                                                                                              |
+| -------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET`    | `/tasks`         | List tasks. Optional: `?status=todo&priority=high`                                                                                       |
+| `POST`   | `/tasks`         | Create (JSON: `title`, `description`, `status`, `priority`); `id` and `createdAt` and `sortOrder` are set on the server                  |
+| `PATCH`  | `/tasks/reorder` | **Bonus (DnD):** body `{ "status": "todo", "orderedIds": ["id1", "id2", …] }` — new order in that **status** column. **204** on success. |
+| `PATCH`  | `/tasks/:id`     | Update any subset of fields. **400** if invalid, **404** if not found.                                                                   |
+| `DELETE` | `/tasks/:id`     | **204** if deleted, **404** if not found.                                                                                                |
 
 If **`API_KEY`** is set, every `.../tasks/...` request must include **`X-API-Key: <same value>`** or the response is **401**.
 
@@ -106,29 +94,29 @@ If **`API_KEY`** is set, every `.../tasks/...` request must include **`X-API-Key
 
 ## 6) Bonuses (all implemented in this repo)
 
-| Bonus | What we did |
-| ----- | ------------ |
-| **Unit tests** | `npm test` — covers `GET`, `POST` + filter, `PATCH /tasks/reorder`, 401 when key is missing, 404s, `sortOrder` in JSON. |
-| **API key** | Optional env `API_KEY` on the server; client uses `VITE_API_KEY` → `X-API-Key`. |
+| Bonus             | What we did                                                                                                                                                                               |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Unit tests**    | `npm test` — covers `GET`, `POST` + filter, `PATCH /tasks/reorder`, 401 when key is missing, 404s, `sortOrder` in JSON.                                                                   |
+| **API key**       | Optional env `API_KEY` on the server; client uses `VITE_API_KEY` → `X-API-Key`.                                                                                                           |
 | **Drag-and-drop** | **`@dnd-kit`** (`@dnd-kit/core` + `sortable` + `utilities`) — 3 **status** columns; drag the **grip** handle to reorder **within** a column; `PATCH /tasks/reorder` persists `sortOrder`. |
 
 ---
 
 ## 7) Core requirements (from the spec)
 
-- **CRUD** on `/tasks` with the fields and enums from the brief.  
-- **Filtering** on `GET` without reloading the full page.  
-- **Form** for new tasks with **client-side** checks before `POST`.  
-- **Inline** status change + **delete** with a **confirmation** dialog.  
+- **CRUD** on `/tasks` with the fields and enums from the brief.
+- **Filtering** on `GET` without reloading the full page.
+- **Form** for new tasks with **client-side** checks before `POST`.
+- **Inline** status change + **delete** with a **confirmation** dialog.
 - **Layout** that works on mobile (columns stack; drag still works on touch with the handle).
 
 ---
 
 ## 8) Assumptions & trade-offs
 
-- **SQLite** + one file: easy to run locally; a hosted SQL DB is the usual next step for real traffic.  
-- **“Real-time-like”** means the list updates **as soon as the API responds**; there is no WebSocket.  
-- **Drag-and-drop** is only **inside** a single status column (per the spec).  
+- **SQLite** + one file: easy to run locally; a hosted SQL DB is the usual next step for real traffic.
+- **“Real-time-like”** means the list updates **as soon as the API responds**; there is no WebSocket.
+- **Drag-and-drop** is only **inside** a single status column (per the spec).
 - A step-by-step **code map** (optional) is in [INTERVIEW_WALKTHROUGH.md](INTERVIEW_WALKTHROUGH.md).
 
 ## License
